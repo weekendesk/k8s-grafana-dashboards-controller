@@ -1,7 +1,5 @@
-const configmap = (configmapData) => JSON.parse(configmapData)
-const matchesSelector = ({ labels = {} }) => true
-const previousVersionMatchedSelector = () => false
-const configmapId = (configmap) => [configmap.metadata.namespace, configmap.metadata.name].join("/")
+const identifier = (configmap) => [configmap.metadata.namespace, configmap.metadata.name].join("/");
+const dashboardManifest = (configmap) => JSON.parse(configmap.data.json);
 
 class Controller {
     constructor(configMapsWatcher, grafana) {
@@ -19,48 +17,37 @@ class Controller {
     }
 
     handleConfigMapCreated(configmap) {
-        if (matchesSelector(configmap)) {
-            this.grafana
-                .createDashboard(configmap)
-                .then(() => {
-                    console.log("created dashboard for configmap", configmapId(configmap));
-                })
-                .catch((error) => {
-                    console.error("unable to create dashboard for configmap", configmapId(configmap), error);
-                });
-        }
+        this.grafana
+            .createDashboard(dashboardManifest(configmap))
+            .then((result) => {
+                console.log("created dashboard for configmap", identifier(configmap), result);
+            })
+            .catch(({ message: error }) => {
+                console.error("unable to create dashboard for configmap", identifier(configmap), error);
+            });
     }
 
     handleConfigMapModified(configmap) {
-        // changes made the configmap match the selector
-        if (matchesSelector(configmap) && !previousVersionMatchedSelector(configmap)) {
-            this.handleConfigMapCreated(configmap)
-        } else if (matchesSelector(configmap)) {
-            this.grafana
-                .updateDashboard(configmap)
-                .then(() => {
-                    console.log("updated dashboard for configmap", configmapId(configmap));
-                })
-                .catch((error) => {
-                    console.error("unable to update dashboard for configmap", configmapId(configmap), error);
-                });
-        } // changes made the configmap not match the selector anymore
-        else if (previousVersionMatchedSelector(configmap)) {
-            this.handleConfigMapDeleted(configmap);
-        }
+        this.grafana
+            .updateDashboard(dashboardManifest(configmap))
+            .then((result) => {
+                console.log("updated dashboard for configmap", identifier(configmap), result);
+            })
+            .catch(({ message: error }) => {
+                console.error("unable to update dashboard for configmap", identifier(configmap), error);
+            });
     }
 
     handleConfigMapDeleted(configmap) {
-        if (matchesSelector(configmap)) {
-            this.grafana
-                .deleteDashboard(configmap)
-                .then(() => {
-                    console.log("deleted dashboard for configmap", configmapId(configmap));
-                })
-                .catch((error) => {
-                    console.error("unable to delete dashboard for configmap", configmapId(configmap), error);
-                });
-        }
+        this.grafana
+            .slug(dashboardManifest(configmap))
+            .then((slug) => { this.grafana.deleteDashboard(slug); })
+            .then(() => {
+                console.log("deleted dashboard for configmap", identifier(configmap));
+            })
+            .catch(({ message: error }) => {
+                console.error("unable to delete dashboard for configmap", identifier(configmap), error);
+            });
     }
 }
 

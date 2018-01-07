@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-grafana-dashboards-controller
+  namespace: monitoring
+spec:
+  template:
+    metadata:
+      labels:
+        app: k8s-grafana-dashboards-controller
+    spec:
+      containers:
+      - name: controller
+        image: k8s-grafana-dashboards-controller
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: GRAFANA_API_URL
+          value: http://monitoring-ui-grafana/api/
+        - name: GRAFANA_API_KEY
+          value: "<API_KEY>"
+        - name: CONFIGMAP_SELECTOR
+          value: "role=grafana-dashboard,purpose=testing"

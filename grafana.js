@@ -1,43 +1,52 @@
 const axios = require("axios");
 
-// https://github.com/tsloughter/grafana-operator/blob/master/pkg/grafana/grafana.go
+const unwrapResponse = (response) => response.data;
 
 class Grafana {
-    constructor(url) {
+    constructor({ url = "", apiKey = null }) {
         this.client = axios.create({
             baseURL: url,
-            timeout: 1000
+            timeout: 1000,
+            headers: !!apiKey ? {
+                'Authorization': 'Bearer ' + apiKey
+            } : {}
         });
     }
 
-    createDashboard(configmap) {
-        console.log(JSON.parse(configmap.data[Object.keys(configmap.data)[0]]));
-        return Promise.resolve();
+    createDashboard(dashboard) {
+        return this.client
+            .post("dashboards/db", Object.assign({}, dashboard, { overwrite: false }))
+            .then(unwrapResponse);
     }
 
-    updateDashboard(configmap) {
-        console.log(JSON.parse(configmap.data[Object.keys(configmap.data)[0]]));
-        return Promise.resolve();
+    updateDashboard(dashboard) {
+        return this.client
+            .post("dashboards/db", Object.assign({}, dashboard, { overwrite: true }))
+            .then(unwrapResponse);
     }
 
-    deleteDashboard(configmap) {
-        console.log(JSON.parse(configmap.data[Object.keys(configmap.data)[0]]));
-        return Promise.resolve();
+    deleteDashboard(slug) {
+        return this.client.delete("dashboards/db/" + slug);
     }
 
-    createDatasource(configmap) {
-        console.log(JSON.parse(configmap.data[Object.keys(configmap.data)[0]]));
-        return Promise.resolve();
-    }
+    slug(json) {
+        const title = json.dashboard.title;
 
-    updateDatasource(datasource) {
-        console.log(JSON.parse(configmap.data[Object.keys(configmap.data)[0]]));
-        return Promise.resolve();
-    }
-
-    deleteDatasource(datasource) {
-        console.log(JSON.parse(configmap.data[Object.keys(configmap.data)[0]]));
-        return Promise.resolve();
+        return this.client.get(
+                "search", {
+                    params: {
+                        query: title
+                    }
+                })
+            .then(unwrapResponse)
+            .then(results => {
+                if (results.length !== 1) {
+                    throw new Error("Expected to find a grafana dashboard with title \"" + title + "\", found " + results.length + ": " + JSON.stringify(results, null, 2));
+                }
+                // remove the db/ prefix from the uri
+                const dashboardUri = results[0].uri;
+                return dashboardUri.substring(3, dashboardUri.length);
+            });
     }
 }
 

@@ -1,7 +1,7 @@
 {
-    "name": "grafana-watcher",
+    "name": "k8s-grafana-dashboards-controller",
     "version": "0.1.0",
-    "description": "watches configmaps with grafana dashboard and datasource configurations and submits them to the grafana api",
+    "description": "Kubernetes controller that watches grafana dashboard configurations defined as configmaps and adds/updates/deletes them to/from grafana",
     "main": "index.js",
     "license": "MIT",
     "dependencies": {

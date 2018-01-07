@@ -1,42 +1,35 @@
 const JSONStream = require('json-stream');
 
-const w = (k8sResource) => {
+const w = (k8sResource, labelSelector) => {
     const jsonStream = new JSONStream();
-    const stream = k8sResource.getStream({ qs: { watch: true } });
+    const stream = k8sResource.getStream({ qs: { watch: true, labelSelector } });
     stream.pipe(jsonStream);
     return jsonStream;
 }
 
 class Watcher {
-    constructor(k8sResource) {
+    constructor(k8sResource, labelSelector) {
         this.resource = k8sResource;
+        this.labelSelector = labelSelector || "";
     }
 
     watch(handlers = {}) {
-        w(this.resource).on("data", event => {
+        w(this.resource, this.labelSelector).on("data", event => {
             try {
                 switch (event.type) {
                     case "ADDED":
-                        if (handlers.onAdded) {
-                            handlers.onAdded(event.object);
-                        }
+                        handlers.onAdded && handlers.onAdded(event.object);
                         break;
                     case "MODIFIED":
-                        if (handlers.onModified) {
-                            handlers.onModified(event.object);
-                        }
+                        handlers.onModified && handlers.onModified(event.object);
                         break;
                     case "DELETED":
-                        if (handlers.onDeleted) {
-                            handlers.onDeleted(event.object);
-                        }
+                        handlers.onDeleted && handlers.onDeleted(event.object);
                         break;
                 }
 
             } catch (error) {
-                if (handlers.onUnhandledError) {
-                    handlers.onUnhandledError(error);
-                }
+                handlers.onUnhandledError && handlers.onUnhandledError(error);
             }
         })
     }
