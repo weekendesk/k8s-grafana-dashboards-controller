@@ -14,7 +14,7 @@ Configuration
 
 Env Variable | | Description | Default | Example
 --- | --- | --- | --- | ---
-`CONFIGMAP_SELECTOR` | optional | kube-api compatible [labelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors) | `""` | `"role=grafana-dashboard,app=awesome-app"`
+`CONFIGMAP_SELECTOR` | `optional` | kube-api compatible [labelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors) | `""` | `"role=grafana-dashboard,app=awesome-app"`
 `GRAFANA_API_URL` | `required` | Grafana's api base URL | `null` | `http://grafana.monitoring.svc.cluster.local/api/`
 `GRAFANA_API_KEY` | `required` unless using basic auth | Grafana API Key (get one at `<YOU-GRAFANA-INSTANCE-URL>`/org/apikeys) | `null` | `"eyJrIjoiWlc4VjZaaFlZbWhwdzFiNVlHbXRn....."`
 `GRAFANA_BASIC_AUTH_USERNAME` | `required` if using basic auth | Grafana username | `null` | `"mbenabda"`
@@ -46,3 +46,8 @@ TODO
     - grafana (api url + auth)
 
 - unit tests
+
+
+Contribions
+========
+Contributions are welcome !
