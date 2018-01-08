@@ -10,6 +10,12 @@ new Controller(
     ),
     new Grafana({
         url: process.env.GRAFANA_API_URL,
-        apiKey: process.env.GRAFANA_API_KEY
+        auth: {
+            apiKey: process.env.GRAFANA_API_KEY,
+            basic: {
+                username: process.env.GRAFANA_BASIC_AUTH_USERNAME,
+                password: process.env.GRAFANA_BASIC_AUTH_PASSWORD
+            }
+        }
     })
 ).run();

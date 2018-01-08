@@ -1,7 +1,6 @@
 FROM node:boron-alpine
 
-ADD package.json ./
-ADD *.js ./
+ADD src/*.js* ./
 
 RUN npm install
 

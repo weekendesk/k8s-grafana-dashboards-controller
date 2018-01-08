@@ -981,8 +981,7 @@ data:
         ]
       },
       "timezone": "browser",
-      "title": "Kubernetes yolo Planning",
-      "version": 4
+      "title": "Kubernetes Capacity Planning"
     }
     ,
       "inputs": [

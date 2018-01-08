@@ -22,7 +22,7 @@ class Controller {
             .then((result) => {
                 console.log("created dashboard for configmap", identifier(configmap), result);
             })
-            .catch(({ message: error }) => {
+            .catch((error) => {
                 console.error("unable to create dashboard for configmap", identifier(configmap), error);
             });
     }
@@ -33,7 +33,7 @@ class Controller {
             .then((result) => {
                 console.log("updated dashboard for configmap", identifier(configmap), result);
             })
-            .catch(({ message: error }) => {
+            .catch((error) => {
                 console.error("unable to update dashboard for configmap", identifier(configmap), error);
             });
     }
@@ -41,11 +41,11 @@ class Controller {
     handleConfigMapDeleted(configmap) {
         this.grafana
             .slug(dashboardManifest(configmap))
-            .then((slug) => { this.grafana.deleteDashboard(slug); })
-            .then(() => {
-                console.log("deleted dashboard for configmap", identifier(configmap));
+            .then(this.grafana.deleteDashboard.bind(this.grafana))
+            .then((deletion) => {
+                console.log("deleted dashboard", deletion.title, "because configmap", identifier(configmap), "has been deleted");
             })
-            .catch(({ message: error }) => {
+            .catch((error) => {
                 console.error("unable to delete dashboard for configmap", identifier(configmap), error);
             });
     }

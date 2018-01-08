@@ -15,8 +15,8 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: GRAFANA_API_URL
-          value: http://monitoring-ui-grafana/api/
+          value: http://monitoring-ui-grafana.monitoring.svc.cluster.local/api/
         - name: GRAFANA_API_KEY
-          value: "<API_KEY>"
+          value: "eyJrIjoiYnl2YzFwb1RoYVJtcUxwSGNKQ09lc0RSaGNsUVVENjAiLCJuIjoiZGFzaGJvYXJkcy1jb250cm9sbGVyIiwiaWQiOjF9"
         - name: CONFIGMAP_SELECTOR
           value: "role=grafana-dashboard,purpose=testing"
