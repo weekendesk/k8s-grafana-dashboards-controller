@@ -1,7 +1,16 @@
-FROM node:boron-alpine
+FROM openjdk:8-jre-alpine
 
-ADD src/*.js* ./
+ARG GIT_REPOSITORY=
+ARG GIT_BRANCH_NAME=
+ARG GIT_COMMIT_ID=
+ARG ARTIFACT_VERSION=1.0-SNAPSHOT
 
-RUN npm install
+ADD dashboards-controller/target/dashboards-controller-$ARTIFACT_VERSION.jar ./app.jar
 
-ENTRYPOINT [ "node", "index.js" ]
+ENTRYPOINT [ "java", "-jar", "app.jar" ]
+
+LABEL GIT_REPOSITORY=$GIT_REPOSITORY \
+      GIT_BRANCH_NAME=$GIT_BRANCH_NAME \
+      GIT_COMMIT_ID=$GIT_COMMIT_ID \
+      ARTIFACT_VERSION=$ARTIFACT_VERSION
+      

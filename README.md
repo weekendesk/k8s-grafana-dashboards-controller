@@ -2,15 +2,20 @@ Kubernetes controller that watches dashboard configurations defined as configmap
 
 Kubernetes
 =======
-- Access to the API is expected to be granted by the `ServiceAccount` attached to the pod running the controller's container.
-- You can use kube-api compatible [labelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors)s to select the configmaps to watch for dashboard descriptions.
+- Access to the Kubernetes API is expected to be granted by the local kubeconfig file.
+- You can use equality-based [labelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement)s to select the configmaps to watch for dashboard descriptions.
 
 Grafana
 =======
-- The controller supports either `api key` or `basic auth`
+- The controller requires access to the Grafana API, either using an `api key` or `basic auth`
+
 
 Configuration
 =======
+
+Configuration can be specified in 2 ways:
+- using command line arguments (use `--help` to see the complete usage instructions)
+- using environment variables:
 
 Env Variable | | Description | Default | Example
 --- | --- | --- | --- | ---
@@ -30,25 +35,6 @@ To update a managed dashboard's title:
 - delete the corresponding configmap from kubernetes
 - change the title in the configmap's dashboard json desciption
 - apply the configmap manifest
-
-
-TODO
-=======
-- fix dashboard update
-- better logs (timestamp, levels, no password)
-- parse args
-    - k8s:
-    `--kubeconfig`,
-    `--cluster`,
-    `--context`,
-    `--selector`,
-    `--namespace`,
-    `--all-namespaces`
-    - grafana (api url + auth)
-- unit tests
-- garbage collection
-- rewrite in Go ?
-
 
 Contributing
 ========
