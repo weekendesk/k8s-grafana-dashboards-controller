@@ -48,6 +48,6 @@ TODO
 - unit tests
 
 
-Contribions
+Contributing
 ========
 Contributions are welcome !
