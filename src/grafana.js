@@ -25,8 +25,7 @@ class Grafana {
     constructor({ url = "", auth = {} }) {
         this.client = axios.create(
             Object.assign({
-                    baseURL: url,
-                    timeout: 1000
+                    baseURL: url
                 },
                 authConfig(auth)
             )
