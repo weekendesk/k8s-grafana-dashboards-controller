@@ -34,7 +34,8 @@ To update a managed dashboard's title:
 
 TODO
 =======
-- better logs (timestamp, levels)
+- fix dashboard update
+- better logs (timestamp, levels, no password)
 - parse args
     - k8s:
     `--kubeconfig`,
@@ -44,8 +45,9 @@ TODO
     `--namespace`,
     `--all-namespaces`
     - grafana (api url + auth)
-
 - unit tests
+- garbage collection
+- rewrite in Go ?
 
 
 Contributing
