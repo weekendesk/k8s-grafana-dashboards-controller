@@ -38,9 +38,10 @@ class Grafana {
             .then(unwrapResponse);
     }
 
-    updateDashboard({ dashboard }) {
-        return this.client
-            .post("dashboards/db", { dashboard })
+    updateDashboard(data) {
+        return this.slug(data)
+            .then(this.deleteDashboard.bind(this))
+            .then(() => this.createDashboard(data))
             .then(unwrapResponse);
     }
 

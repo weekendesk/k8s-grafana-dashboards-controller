@@ -1,5 +1,5 @@
-const identifier = (configmap) => [configmap.metadata.namespace, configmap.metadata.name].join("/");
-const dashboardManifest = (configmap) => JSON.parse(configmap.data.json);
+const key = (configmap) => [configmap.metadata.namespace, configmap.metadata.name].join("/");
+const unwrapDashboard = (configmap) => JSON.parse(configmap.data.json);
 
 class Controller {
     constructor(configMapsWatcher, grafana) {
@@ -18,35 +18,35 @@ class Controller {
 
     handleConfigMapCreated(configmap) {
         this.grafana
-            .createDashboard(dashboardManifest(configmap))
+            .createDashboard(unwrapDashboard(configmap))
             .then((result) => {
-                console.log("created dashboard for configmap", identifier(configmap), result);
+                console.log("created dashboard for configmap", key(configmap), result);
             })
             .catch((error) => {
-                console.error("unable to create dashboard for configmap", identifier(configmap), error);
+                console.error("unable to create dashboard for configmap", key(configmap), error);
             });
     }
 
     handleConfigMapModified(configmap) {
         this.grafana
-            .updateDashboard(dashboardManifest(configmap))
+            .updateDashboard(unwrapDashboard(configmap))
             .then((result) => {
-                console.log("updated dashboard for configmap", identifier(configmap), result);
+                console.log("updated dashboard for configmap", key(configmap), result);
             })
             .catch((error) => {
-                console.error("unable to update dashboard for configmap", identifier(configmap), error);
+                console.error("unable to update dashboard for configmap", key(configmap), error);
             });
     }
 
     handleConfigMapDeleted(configmap) {
         this.grafana
-            .slug(dashboardManifest(configmap))
+            .slug(unwrapDashboard(configmap))
             .then(this.grafana.deleteDashboard.bind(this.grafana))
             .then(() => {
-                console.log("the dashboard managed by configmap", identifier(configmap), "has been deleted");
+                console.log("the dashboard managed by configmap", key(configmap), "has been deleted");
             })
             .catch((error) => {
-                console.error("unable to delete dashboard for configmap", identifier(configmap), error);
+                console.error("unable to delete dashboard for configmap", key(configmap), error);
             });
     }
 }
