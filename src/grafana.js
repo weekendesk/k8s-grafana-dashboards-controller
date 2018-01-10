@@ -34,13 +34,13 @@ class Grafana {
 
     createDashboard(dashboard) {
         return this.client
-            .post("dashboards/db", Object.assign({}, dashboard, { overwrite: false }))
+            .post("dashboards/import", dashboard)
             .then(unwrapResponse);
     }
 
-    updateDashboard(dashboard) {
+    updateDashboard({ dashboard }) {
         return this.client
-            .post("dashboards/db", Object.assign({}, dashboard, { overwrite: true }))
+            .post("dashboards/db", { dashboard })
             .then(unwrapResponse);
     }
 
