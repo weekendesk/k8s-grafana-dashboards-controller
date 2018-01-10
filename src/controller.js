@@ -41,9 +41,9 @@ class Controller {
     handleConfigMapDeleted(configmap) {
         this.grafana
             .slug(dashboardManifest(configmap))
-            .then(this.grafana.deleteDashboard.bind(this.grafana))
-            .then((deletion) => {
-                console.log("deleted dashboard", deletion.title, "because configmap", identifier(configmap), "has been deleted");
+            .then((slug) => { this.grafana.deleteDashboard.bind(this.grafana); return slug; })
+            .then((slug) => {
+                console.log("deleted dashboard", slug, "because configmap", identifier(configmap), "has been deleted");
             })
             .catch((error) => {
                 console.error("unable to delete dashboard for configmap", identifier(configmap), error);
