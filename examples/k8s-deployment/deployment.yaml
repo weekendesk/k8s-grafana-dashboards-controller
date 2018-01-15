@@ -4,6 +4,7 @@ metadata:
   name: k8s-grafana-dashboards-controller
   namespace: monitoring
 spec:
+  replicas: 1
   template:
     metadata:
       labels:
@@ -11,11 +12,11 @@ spec:
     spec:
       containers:
       - name: controller
-        image: k8s-grafana-dashboards-controller
+        image: mbenabda/k8s-grafana-dashboards-controller:0.1.1
         imagePullPolicy: IfNotPresent
         env:
         - name: GRAFANA_API_URL
-          value: http://monitoring-ui-grafana.monitoring.svc.cluster.local/api/
+          value: http://monitoring-ui-grafana.monitoring.svc.cluster.local/
         - name: GRAFANA_API_KEY
           value: "eyJrIjoiYnl2YzFwb1RoYVJtcUxwSGNKQ09lc0RSaGNsUVVENjAiLCJuIjoiZGFzaGJvYXJkcy1jb250cm9sbGVyIiwiaWQiOjF9"
         - name: CONFIGMAP_SELECTOR

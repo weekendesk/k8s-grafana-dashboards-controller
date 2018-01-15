@@ -1,12 +1,8 @@
 Kubernetes controller that watches dashboard configurations defined as configmaps and adds/updates/deletes them to/from grafana
 
-Kubernetes
-=======
+
 - Access to the Kubernetes API is expected to be granted by the local kubeconfig file.
 - You can use equality-based [labelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement)s to select the configmaps to watch for dashboard descriptions.
-
-Grafana
-=======
 - The controller requires access to the Grafana API, either using an `api key` or `basic auth`
 
 
@@ -25,7 +21,6 @@ Env Variable | | Description | Default | Example
 `GRAFANA_BASIC_AUTH_USERNAME` | `required` if using basic auth | Grafana username | `null` | `"mbenabda"`
 `GRAFANA_BASIC_AUTH_PASSWORD` | `required` if using basic auth | Grafana plain text password | `null` | `"1234"`
 
-
 Caveat
 =======
 Because grafana API uses title-derived slugs to identify dashboards, and in order not to have to manage state for this controller: 
@@ -35,6 +30,25 @@ To update a managed dashboard's title:
 - delete the corresponding configmap from kubernetes
 - change the title in the configmap's dashboard json desciption
 - apply the configmap manifest
+
+
+
+Run on Docker
+======
+```
+docker run \
+       -v $HOME/.kube/:/root/.kube:ro \
+       mbenabda/k8s-grafana-dashboards-controller:0.1.1 \
+       --grafana-url http://grafana:3000 \
+       --grafana-user johndoe \
+       --grafana-password s3cr3t \
+       --selector role=grafana-dashboard
+```
+
+Run on Kubernetes
+========
+Take a look at the [example deployment](./examples/k8s-deployment)
+
 
 Contributing
 ========
