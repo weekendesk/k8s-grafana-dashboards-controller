@@ -6,6 +6,8 @@ properties([
 
 node {
     ws("workspace/${env.JOB_NAME}/${env.BUILD_NUMBER}".replace('%2F', '_')) {
+        def mvn = tool("M3") + "/bin/mvn"
+
         def ARTIFACT_VERSION;
         def DOCKER_IMAGE_NAME;
         def DOCKER_IMAGE;
@@ -33,10 +35,10 @@ node {
         }
 
         stage("Create version number") {
-            def version = readJSON(file: findFiles(glob: '**/package.json')[0].path )["version"].trim()
+            def version = readMavenPom().version.replaceAll("-SNAPSHOT", "").trim()
 
             if (IS_MASTER_BRANCH) {
-                ARTIFACT_VERSION = version.trim()
+                ARTIFACT_VERSION = "${version}-${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
             } else if (IS_DEVELOP_BRANCH) {
                 ARTIFACT_VERSION = "${version}-dev-${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
             } else if (IS_RELEASE_BRANCH || IS_HOTFIX_BRANCH) {
@@ -45,8 +47,30 @@ node {
                 ARTIFACT_VERSION = "${version}-${GIT_BRANCH_NAME.replaceAll("\\W", "_")}.${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
             }
 
-            sh "git branch ${ARTIFACT_VERSION}"
+			sh """
+				git branch ${ARTIFACT_VERSION}
+				${mvn} --errors \\
+					 versions:set \\
+					-DnewVersion=\"${ARTIFACT_VERSION}\" \\
+					-DupdateMatchingVersions=true \\
+					-DgenerateBackupPoms=false \\
+					-DartifactId='*' \\
+					-DgroupId='*'
+			"""
         }
+
+		stage("Build and test") {
+			withCredentials([file(credentialsId: 'MVN_SETTINGS_FILE', variable: 'settingsFile')]) {
+				sh """
+					${mvn} -X --batch-mode \\
+						--show-version \\
+						--errors \\
+						--update-snapshots \\
+						--settings ${settingsFile} \\
+						verify \\
+				"""
+			}
+		}
 
         stage("Build docker image") {
 			DOCKER_IMAGE_NAME = GIT_REPOSITORY_NAME + ":" + ARTIFACT_VERSION;
