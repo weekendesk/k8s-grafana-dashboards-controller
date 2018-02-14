@@ -32,7 +32,6 @@ coverage
 .settings/
 .project
 .classpath
-
 ### Java ###
 *.class
 
