@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getSimpleName());
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         try {
             K8sOptions k8sOptions = new K8sOptions();
             DashboardsWatchOptions configMapsFiler = new DashboardsWatchOptions();
@@ -43,11 +43,27 @@ public class Main {
             Config k8sClientConfiguration = k8sOptions.asClientConfig();
             GrafanaConfiguration grafanaClientConfiguration = grafanaOptions.asClientConfig();
 
-            new Controller(
-                    new DefaultKubernetesClient(k8sClientConfiguration),
-                    configMapsFiler,
-                    new GrafanaClientImpl(grafanaClientConfiguration)
-            ).run();
+
+            GrafanaClientImpl grafana = new GrafanaClientImpl(grafanaClientConfiguration);
+
+            LivenessProbe livenessProbe = new LivenessProbe(grafana::isAlive);
+
+            LOGGER.info("waiting for grafana to be alive");
+            livenessProbe.waitForCompletion();
+
+            if(livenessProbe.isAlive()) {
+                LOGGER.info("Grafana is alive. Starting the controller.");
+
+                new Controller(
+                        new DefaultKubernetesClient(k8sClientConfiguration),
+                        configMapsFiler,
+                        grafana
+                ).run();
+
+            } else {
+                LOGGER.info("Grafana is not alive. exiting");
+                System.exit(1);
+            }
 
         } catch (ParameterException e) {
             LOGGER.warning(e.getMessage());

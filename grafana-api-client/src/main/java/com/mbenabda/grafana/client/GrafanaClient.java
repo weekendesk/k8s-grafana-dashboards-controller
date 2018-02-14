@@ -13,4 +13,6 @@ public interface GrafanaClient {
     JsonNode searchDashboard(String title) throws GrafanaException, IOException;
 
     String slug(String title) throws GrafanaException, IOException;
+
+    boolean isAlive();
 }

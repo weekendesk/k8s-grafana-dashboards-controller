@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class GrafanaClientImpl implements GrafanaClient {
 
@@ -36,7 +37,11 @@ public class GrafanaClientImpl implements GrafanaClient {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(configuration.host())
                 .client(configuration.auth()
-                        .authorize(new OkHttpClient.Builder())
+                        .authorize(new OkHttpClient.Builder()
+                                .writeTimeout(5, SECONDS)
+                                .readTimeout(5, SECONDS)
+                                .connectTimeout(1, SECONDS)
+                        )
                         .build())
                 .addConverterFactory(JacksonConverterFactory.create(mapper))
                 .build();
@@ -92,5 +97,15 @@ public class GrafanaClientImpl implements GrafanaClient {
 
     public String slug(String title) throws GrafanaException, IOException {
         return searchDashboard(title).get("uri").asText().substring(3);
+    }
+
+    @Override
+    public boolean isAlive() {
+        try {
+            service.health().execute();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

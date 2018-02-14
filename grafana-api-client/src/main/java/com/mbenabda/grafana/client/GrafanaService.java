@@ -10,6 +10,7 @@ public interface GrafanaService {
     String DASHBOARDS = "api/dashboards/db/";
     String SEARCH = "api/search";
     String IMPORT = "api/dashboards/import";
+    String HEALTH = "api/health";
 
     @POST(IMPORT)
     Call<JsonNode> importDashboard(@Body JsonNode dashboardJson);
@@ -19,4 +20,7 @@ public interface GrafanaService {
 
     @GET(SEARCH)
     Call<List<JsonNode>> searchDashboard(@Query("query") String title);
+
+    @GET(HEALTH)
+    Call<JsonNode> health();
 }
