@@ -1,9 +1,3 @@
-properties([
-        pipelineTriggers([
-                [$class: 'GitHubPushTrigger'], pollSCM('*/1 * * * *')
-        ])
-])
-
 node {
     ws("workspace/${env.JOB_NAME}/${env.BUILD_NUMBER}".replace('%2F', '_')) {
         def mvn = tool("M3") + "/bin/mvn"
@@ -11,11 +5,10 @@ node {
         def ARTIFACT_VERSION;
         def DOCKER_IMAGE_NAME;
         def DOCKER_IMAGE;
-        def IS_FEATURE_BRANCH = false
 		
         def GIT_REPOSITORY;
-		def GIT_BRANCH_NAME;
-		def GIT_COMMIT_ID;
+        def GIT_BRANCH_NAME;
+        def GIT_COMMIT_ID;
 
         def TIMESTAMP;
 
@@ -29,24 +22,16 @@ node {
                 GIT_COMMIT_ID = scmVars.GIT_COMMIT
 
                 TIMESTAMP = new java.text.SimpleDateFormat("yyMMddHHmmss").format(new Date())
-                IS_FEATURE_BRANCH = GIT_BRANCH_NAME.startsWith("feature/")
-                IS_RELEASE_BRANCH = GIT_BRANCH_NAME.startsWith("release/")
-                IS_HOTFIX_BRANCH = GIT_BRANCH_NAME.startsWith("hotfix/")
-                IS_MASTER_BRANCH = GIT_BRANCH_NAME == "master"
-                IS_DEVELOP_BRANCH = GIT_BRANCH_NAME == "develop"
             }
 
             stage("Create version number") {
                 def version = readMavenPom().version.replaceAll("-SNAPSHOT", "").trim()
+                ARTIFACT_VERSION = "${version}-${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
 
-                if (IS_MASTER_BRANCH) {
-                    ARTIFACT_VERSION = "${version}-${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
-                } else if (IS_DEVELOP_BRANCH) {
-                    ARTIFACT_VERSION = "${version}-dev-${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
-                } else if (IS_RELEASE_BRANCH || IS_HOTFIX_BRANCH) {
-                    ARTIFACT_VERSION = "${version}-rc-${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
+                if (GIT_BRANCH_NAME == "master") {
+                    ARTIFACT_VERSION = "release-${ARTIFACT_VERSION}"
                 } else {
-                    ARTIFACT_VERSION = "${version}-${GIT_BRANCH_NAME.replaceAll("\\W", "_")}.${env.BUILD_NUMBER}-${TIMESTAMP}".trim()
+                    ARTIFACT_VERSION = "pr-${GIT_BRANCH_NAME.replaceAll('/', '_')}-${ARTIFACT_VERSION}"
                 }
 
                 sh """
@@ -75,7 +60,7 @@ node {
             }
 
             stage("Build docker image") {
-                DOCKER_IMAGE_NAME = GIT_REPOSITORY_NAME + ":" + ARTIFACT_VERSION;
+                DOCKER_IMAGE_NAME = "949398260329.dkr.ecr.eu-west-1.amazonaws.com/${GIT_REPOSITORY_NAME}:${ARTIFACT_VERSION}";
 
                 DOCKER_IMAGE = docker.build(
                     DOCKER_IMAGE_NAME, 
@@ -93,11 +78,8 @@ node {
             }
 
             stage("Publish version") {
-                // docker
-                docker.withRegistry(env.PRIVATE_DOCKER_REGISTRY_URL, 'DOCKER_REGISTRY_USER') {
-                    DOCKER_IMAGE.push(ARTIFACT_VERSION)
-                    dockerFingerprintFrom dockerfile: 'Dockerfile', image: DOCKER_IMAGE_NAME
-                }
+                DOCKER_IMAGE.push(ARTIFACT_VERSION)
+                dockerFingerprintFrom dockerfile: 'Dockerfile', image: DOCKER_IMAGE_NAME
 
                 // jenkins
                 currentBuild.displayName = ARTIFACT_VERSION
